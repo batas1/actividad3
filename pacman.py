@@ -134,25 +134,23 @@ def move():
         x = (index % 20) * 20 - 200
         y = 180 - (index // 20) * 20
         square(x, y)
-
     up()
     goto(pacman.x + 10, pacman.y + 10)
     dot(20, 'yellow')
-
+# Update the movement for each ghost
     for point, course in ghosts:
         if valid(point + course):
             point.move(course)
         else:
-            options = [
-                vector(5, 0),
-                vector(-5, 0),
-                vector(0, 5),
-                vector(0, -5),
-            ]
-            plan = choice(options)
+            # Calculate the direction towards Pacman
+            x_ghost = pacman.x - point.x
+            y_ghost = pacman.y - point.y
+            if abs(x_ghost) > abs(y_ghost):
+                plan = vector(5 if x_ghost > 0 else -5, 0)
+            else:
+                plan = vector(0, 5 if y_ghost > 0 else -5)
             course.x = plan.x
             course.y = plan.y
-
         up()
         goto(point.x + 10, point.y + 10)
         dot(20, 'red')
