@@ -9,47 +9,57 @@ Exercises
 5. Make the ghosts smarter.
 """
 
+#Import necessary modules
 from random import choice
 from turtle import *
 
 from freegames import floor, vector
 
+# Set up the game
 state = {'score': 0}
 path = Turtle(visible=False)
 writer = Turtle(visible=False)
 aim = vector(5, 0)
 pacman = vector(-40, -80)
 ghosts = [
-    [vector(-180, 160), vector(5, 0)],
-    [vector(-180, -160), vector(0, 5)],
-    [vector(100, 160), vector(0, -5)],
-    [vector(100, -160), vector(-5, 0)],
+    [vector(-180, 160), vector(10, 0)],  # Doubled speed from vector(5, 0) to vector(10, 0)
+    [vector(-180, -160), vector(0, 10)],  # Doubled speed from vector(0, 5) to vector(0, 10)
+    [vector(100, 160), vector(0, -10)],  # Doubled speed from vector(0, -5) to vector(0, -10)
+    [vector(100, -160), vector(-10, 0)],  # Doubled speed from vector(-5, 0) to vector(-10, 0)
 ]
+
 # fmt: off
+# Set up the tiles
+# 0 - wall
+# 1 - empty
 tiles = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
-    0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
-    0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0,
-    0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0,
-    0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1,
-    0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0,
-    0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0,
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 0,
-    0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0,
-    0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 1, 1, 1, 1, 0,
-    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-    0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1,
-    0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0,
-    0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0,
-    0, 1, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0,
+    0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0,
+    0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 0,
+    0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0,
+    0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0,
+    0, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 0,
+    0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0,
+    0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0,
+    0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 0, 0,
+    0, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0,
+    0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0,
+    0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 1, 1, 0,
+    0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1,
+    0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0,
+    0, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0,
+    0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0,
+    0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 ]
+
 # fmt: on
 
+# Define functions
 
-
-
+# Function to draw a square at a given position
 def square(x, y):
     """Draw square using path at (x, y)."""
     path.up()
@@ -63,7 +73,7 @@ def square(x, y):
 
     path.end_fill()
 
-
+# Function to return the offset of a point in tiles
 def offset(point):
     """Return offset of point in tiles."""
     x = (floor(point.x, 20) + 200) / 20
@@ -71,23 +81,22 @@ def offset(point):
     index = int(x + y * 20)
     return index
 
-
+# Function to check if a point is valid
 def valid(point):
     """Return True if point is valid in tiles."""
     index = offset(point)
-    if index < 0 or index >= len(tiles):  # Verifica que el índice esté dentro de los límites de 'tiles'.
-        return False
+
     if tiles[index] == 0:
         return False
+
     index = offset(point + 19)
-    if index < 0 or index >= len(tiles):  # Verifica nuevamente por seguridad.
-        return False
+
     if tiles[index] == 0:
         return False
+
     return point.x % 20 == 0 or point.y % 20 == 0
 
-
-
+# Function to draw the world
 def world():
     """Draw world using path."""
     bgcolor('black')
@@ -106,7 +115,7 @@ def world():
                 path.goto(x + 10, y + 10)
                 path.dot(2, 'white')
 
-
+# Function to clear the screen
 def move():
     """Move pacman and all ghosts."""
     writer.undo()
@@ -130,21 +139,20 @@ def move():
     goto(pacman.x + 10, pacman.y + 10)
     dot(20, 'yellow')
 
-    # Update the movement for each ghost
     for point, course in ghosts:
         if valid(point + course):
             point.move(course)
         else:
-            #Calculate the direction towards Pacman
-            x_ghost = pacman.x - point.x
-            y_ghost = pacman.y - point.y
-            if abs(x_diff_pacman_ghost) > abs(y_diff_pacman_ghost):
-                plan = vector(5 if x_diff_pacman_ghost > 0 else -5, 0)
-            else:
-                plan = vector(0, 5 if y_diff_pacman_ghost > 0 else -5)
+            options = [
+                vector(5, 0),
+                vector(-5, 0),
+                vector(0, 5),
+                vector(0, -5),
+            ]
+            plan = choice(options)
             course.x = plan.x
             course.y = plan.y
-    
+
         up()
         goto(point.x + 10, point.y + 10)
         dot(20, 'red')
@@ -155,16 +163,16 @@ def move():
         if abs(pacman - point) < 20:
             return
 
-    ontimer(move, 50) #increase ghost speed
+    ontimer(move, 100)
 
-
+# Function to change the aim of pacman
 def change(x, y):
     """Change pacman aim if valid."""
     if valid(pacman + vector(x, y)):
         aim.x = x
         aim.y = y
 
-
+# Set up the screen
 setup(420, 420, 370, 0)
 hideturtle()
 tracer(False)
